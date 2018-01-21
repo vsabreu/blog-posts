@@ -1,0 +1,47 @@
+---
+
+Using function types to improve readability in Go
+Among Go’s great characteristics, there is the fact that the language treat functions as first-class citizens, what give us a lot of power and flexibility. Simply put, we can have functions that receive others functions as arguments, or functions that return other functions. Something like this:
+func meow(fn func(string)) {
+    fn("meow")
+}
+Function meow receives another function that is then called from meow. Simple and cool, right?
+
+
+---
+
+Now let's suppose we have some more complex functions that receive other functions:
+func writeSomething(a string, b int, fn func(string, int) string) {
+    fmt.Println(fn(a, b))
+}
+writeSomething receives a string, an int and a function that also receives a string and an int and returns a string. To satisfy writeSomething, we also built the following functions:
+func inEnglish(a string, b int) string {
+    return fmt.Sprintf("Your values are a = %s and b = %d", a, b)
+}
+func inPortuguese(a string, b int) string {
+    return fmt.Sprintf("Seus valores são a = %s e b = %d", a, b)
+}
+inEnglish and inPortuguese both have what it takes to be passed to writeSomething as arguments, both receive a string and an int and return a string, resulting in a function call like this:
+writeSomething("nyancat", 42, inEnglish)
+// output: Your values are a = nyancat and b = 42
+When things start to evolve, readability can get compromised and our job as good developers is to keep the code as clean and maintainable as we can.
+Let's suppose that our code started to evolve and now we have something like this (types are fictitious):
+func makeSomething(r io.Reader, fn func(fs *bogus.FakeSomething, afs *bogus.AnotherFakeSomething) *bogus.FakeResultOrWhatever) *bogus.Wow {
+    // code here
+}
+Awful, isn't it? Readability gets compromised, code looks messy and we start having other undesired things in our code. A lot can and must be done, and one of the resources that we can use is defining function as types to improve readability and code quality. I use to call this function types!
+
+
+---
+
+Let's get back to the writeSomething example and create a type called fnLanguage to represent the function parameter and use it in writeSomething definition:
+type fnLanguage func(string, int) string
+func writeSomething(a string, b int, fn fnLanguage) {
+    fmt.Println(fn(a, b))
+}
+Our function is now better to read. The created type represents the function definition that writeSomething has to receive, and any function that has this same structure can be passed as a fnLanguage, in this case, our inEnglish and inPortuguese functions.
+
+
+---
+
+So that's it for this post, guys. I hope you enjoyed this little tip that can help your code being more readable, beautiful and expressive. If you have something to add or correct, please be my guest and leave a comment!
