@@ -12,7 +12,7 @@ func init() {
 }
 
 func main() {
-	fmt.Println(getValue("mear"))
+	fmt.Println(getValue("meow"))
 }
 
 func getValue(v string) string {

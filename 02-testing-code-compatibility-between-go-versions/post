@@ -1,0 +1,33 @@
+---
+
+When a new version of a specific language, framework or library comes out, we gotta ensure that our code is compatible with the new version and ensure that everything keeps working fine.
+Some months ago I was working on a project using Go 1.8, when version 1.9 was released in the meantime. At first I was excited to read the news and I happily updated Go. That was when I found that one of the mocking libraries that I was using in this project was not compatible with the new version! Bang! I had to rollback to Go 1.8 because my project was crashing :(
+How could we check if our code is compatible with a specific version of the language? In this article, I will show a quick way to run our code based on a specific version of Go, using a Docker container.
+Note: This article is not about how Docker works or what it is. If you are not familiar with this technology, I strongly advise you to check it out here, it's amazing and will turn your life easier!
+
+
+---
+
+For this example, let's work with a new type that comes with Go 1.9, the sync.Map. This type provides us a concurrent map that is safe for working with goroutines and concurrency in general. There is a great article about this new type called The new kid in town — Go’s sync.Map.
+So we have the following code:
+
+https://gist.github.com/vsabreu/0b392e9fe6aa2d2b4367174af2ea1d4f
+
+A sync.Map called sm is initialized with init() and then we getValue() a "meow" key.
+Since sync.Map is a Go 1.9 type, we are not able to run it with previous versions of Go. How can we check this compatibility? Docker containers!
+Let's run the following command from our project directory:
+$ docker run -it -v $(pwd):/vol -w /vol golang:1.8 go run main.go
+We are running a new container based on golang:1.8 image in iterative mode (using docker run -it), mounting a new "/vol" volume that points to our current directory (using -v $(pwd):/vol), telling that the working directory inside the container is our created "/vol" volume (using -w /vol) and running our main file (using go run main.go). Not that hard, right?
+Now let's see the output:
+$ docker run -it -v $(pwd):/vol -w /vol golang:1.8 go run main.go
+# command-line-arguments
+./main.go:8: undefined: sync.Map
+We've got an error! And this is right. Remember that sync.Map belongs to Go version 1.9? That's the reason. Now, let's change the Docker image version to 1.9 and run it again:
+$ docker run -it -v $(pwd):/vol -w /vol golang:1.9 go run main.go
+mmmmeow!
+Mmmmeow! The code works, since the image version is now 1.9! This could be done with any piece of code, quick and easy, without the need to install specific versions and spending so much time, just taking advantage of the power that Docker containers can give us. Cool!
+
+
+---
+
+I hope you enjoyed this article and that it's useful in some way for you. If you have any comment, suggestion or correction, please be my guest and leave your comments below.
